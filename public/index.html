@@ -181,7 +181,9 @@ td.num,th.r{text-align:right;}
         <div class="form">
           <div class="field"><label for="aShares">TQQQ 보유 주수</label><input id="aShares" type="number" min="0" step="1" inputmode="numeric"></div>
           <div class="field"><label for="aCash">현금 ($)</label><input id="aCash" type="number" min="0" step="0.01" inputmode="decimal"><small>RP·MMF 등 이 전략용 대기 자금</small></div>
-          <div class="field"><label for="aPrice">계산 가격 ($)</label><input id="aPrice" type="number" min="0" step="0.01" inputmode="decimal"><small id="aPriceNote">비우면 기준 종가를 씁니다</small></div>
+          <div class="field" id="avgF1" hidden><label for="tAvg">평균 매수가 ($)</label><input id="tAvg" type="number" min="0" step="0.01" inputmode="decimal"><small id="avgNote">양도세 계산에 씁니다</small></div>
+          <div class="field" id="avgF2" hidden><label for="tAvgFx">평균 매수 환율 (원/$)</label><input id="tAvgFx" type="number" min="0" step="0.01" inputmode="decimal"><small>모르면 매수 시기 환율의 대략값</small></div>
+          <div class="field"><label for="aPrice">주문 계산 가격 ($) · 선택</label><input id="aPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="비워 두세요"><small id="aPriceNote">비우면 기준 종가를 씁니다</small></div>
         </div>
         <dl class="kv" id="acctKv"></dl>
         <div class="bar" id="wBar" aria-hidden="true"><span class="band" id="wBand"></span><i id="wCur"></i><b id="wTgt"></b></div>
@@ -194,7 +196,7 @@ td.num,th.r{text-align:right;}
           <div id="orderDetail" class="foot" style="margin-top:0"></div>
         </div>
         <div class="row" style="margin-top:10px"><button id="copyOrder" type="button">주문 내용 복사</button><span class="msg" id="copyMsg" style="margin:0"></span></div>
-        <p class="foot">본장 종가로 체결되도록 LOC나 MOC로 넣습니다. 수량은 계산 가격 기준이라 실제 종가에 따라 비중이 조금 달라질 수 있습니다.</p>
+        <p class="foot">본장 종가로 체결되도록 LOC나 MOC로 넣습니다. 수량은 기준 종가(또는 주문 계산 가격)로 계산해서 실제 종가에 따라 비중이 조금 달라질 수 있습니다.</p>
       </div>
     </div>
   </section>
@@ -217,13 +219,6 @@ td.num,th.r{text-align:right;}
           <div class="field"><label for="tMethod">취득가 계산</label><select id="tMethod"><option value="fifo">선입선출 (세법 원칙)</option><option value="avg">이동평균 (일부 증권사)</option></select><small>쓰는 증권사의 양도세 계산 방식에 맞추세요</small></div>
           <div class="field"><label for="tOther">다른 해외주식 손익 (원)</label><input id="tOther" type="number" step="1" inputmode="numeric" placeholder="0"><small>같은 해 다른 종목 실현손익. 공제 250만원을 함께 씁니다</small></div>
           <div class="field"><label for="tFxNow">현재 환율 (원/$)</label><input id="tFxNow" type="number" min="0" step="0.01" inputmode="decimal"><small id="tFxNote">비우면 최근 환율을 씁니다</small></div>
-        </div>
-        <div id="openBox" hidden>
-          <p class="foot" id="openNote"></p>
-          <div class="form" style="margin-top:10px">
-            <div class="field"><label for="tAvg">그 주식의 평균 매수가 ($)</label><input id="tAvg" type="number" min="0" step="0.01" inputmode="decimal"></div>
-            <div class="field"><label for="tAvgFx">그 주식의 평균 매수 환율 (원)</label><input id="tAvgFx" type="number" min="0" step="0.01" inputmode="decimal"></div>
-          </div>
         </div>
       </div>
       <div><dl class="kv" id="taxKv" style="margin-top:0"></dl><p class="foot" id="taxWarn"></p></div>
@@ -441,7 +436,7 @@ function taxLedger(log, o) {
   o = o || {};
   const fifo = o.method !== 'avg', fxs = o.fx || [], fb = +o.fxFallback || 0, op = o.open || {};
   const lots = [];
-  if (op.shares > 0) lots.push({ q: op.shares, k: op.avgCost > 0 && op.avgFx > 0 ? op.shares * op.avgCost * op.avgFx : null });
+  if (op.shares > 0) lots.push({ q: op.shares, k: op.avgCost > 0 && op.avgFx > 0 ? op.shares * op.avgCost * op.avgFx : null, u: op.avgCost > 0 ? op.shares * op.avgCost : null });
   const src = log || [], rows = new Array(src.length);
   const order = src.map((x, i) => i).sort((a, b) => (src[a].d < src[b].d ? -1 : src[a].d > src[b].d ? 1 : a - b));
   let short = 0;
@@ -452,14 +447,15 @@ function taxLedger(log, o) {
     else { const f = fxOn(fxs, sd); if (f) { fx = f.fx; how = f.exact ? 'auto' : 'est'; } else if (fb > 0) { fx = fb; how = 'est'; } }
     const r = { side: x.side, sd, year: sd.slice(0, 4), fx, how, rk: null, basis: null };
     if (x.side === 'buy') {
-      const k = fx ? (q * p + fee) * fx : null;
-      if (!fifo && lots.length) { const l = lots[0]; l.k = l.k == null || k == null ? null : l.k + k; l.q += q; }
-      else lots.push({ q, k });
+      const k = fx ? (q * p + fee) * fx : null, u = q * p + fee;
+      if (!fifo && lots.length) { const l = lots[0]; l.k = l.k == null || k == null ? null : l.k + k; l.u = l.u == null ? null : l.u + u; l.q += q; }
+      else lots.push({ q, k, u });
     } else {
       let need = q, basis = 0, known = true;
       while (need > 0 && lots.length) {
         const l = lots[0], m = Math.min(need, l.q);
         if (l.k == null) known = false; else { const part = l.k * m / l.q; basis += part; l.k -= part; }
+        if (l.u != null) l.u -= l.u * m / l.q;
         l.q -= m; need -= m; if (l.q <= 1e-9) lots.shift();
       }
       if (need > 0) { known = false; short += need; }
@@ -468,7 +464,7 @@ function taxLedger(log, o) {
     rows[i] = r;
   });
   const hq = lots.reduce((s, l) => s + l.q, 0);
-  return { rows, holdShares: hq, holdCostK: lots.some(l => l.k == null) ? null : lots.reduce((s, l) => s + l.k, 0), short };
+  return { rows, holdShares: hq, holdCostK: lots.some(l => l.k == null) ? null : lots.reduce((s, l) => s + l.k, 0), holdCostU: lots.some(l => l.u == null) ? null : lots.reduce((s, l) => s + l.u, 0), short };
 }
 // 귀속 연도(결제일 기준)의 예상 세액. other: 같은 해 다른 해외주식 손익(원)
 function taxYear(led, year, other) {
@@ -671,11 +667,13 @@ function refPrice(X) { const v = +$('aPrice').value; return v > 0 ? v : (X.last 
 let lastPlan = null;
 function renderAccount(X) {
   const a = curAccount(); $('sampleNote').hidden = a.set;
-  const p = refPrice(X); $('aPriceNote').textContent = X.last ? '비우면 기준 종가 ' + money(X.last.c) + '를 씁니다' : '비우면 기준 종가를 씁니다';
+  const p = refPrice(X); $('aPriceNote').textContent = '평균 매수가가 아닙니다. 비우면 기준 종가' + (X.last ? ' ' + money(X.last.c) : '') + '로 오늘 주문 수량을 계산합니다. 장중에 미리 계산해 볼 때만 넣고, 저장되지 않습니다.';
+  renderAvg(X);
   if (!X.ok) { $('acctKv').innerHTML = ''; $('orderAct').textContent = '—'; $('orderDetail').textContent = '종가 데이터가 부족합니다.'; return; }
   const thr = X.c.threshold, P = planOrder({ shares: a.shares, cash: a.cash, price: p, w: X.w, thr }); lastPlan = { P, p, X };
   const row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
-  $('acctKv').innerHTML = row('평가액', money(P.V)) + row('TQQQ', money(a.shares * p) + ' · ' + a.shares + '주') + row('현재 비중', pc(P.cur, 1)) + row('목표 비중', pc(X.w, 1)) + row('차이', (P.gap >= 0 ? '+' : '') + (P.gap * 100).toFixed(1) + '%p');
+  const led = ledger(), avg = a.shares > 0 && led.holdCostU != null && Math.abs(led.holdShares - a.shares) < 1e-6 ? led.holdCostU / a.shares : null;
+  $('acctKv').innerHTML = row('평가액', money(P.V)) + row('TQQQ', money(a.shares * p) + ' · ' + a.shares + '주') + (avg ? row('평균 매수가', money(avg) + ' (' + (p / avg - 1 >= 0 ? '+' : '') + pc(p / avg - 1, 1) + ')') : '') + row('현재 비중', pc(P.cur, 1)) + row('목표 비중', pc(X.w, 1)) + row('차이', (P.gap >= 0 ? '+' : '') + (P.gap * 100).toFixed(1) + '%p');
   $('wCur').style.width = Math.min(100, P.cur * 100) + '%'; $('wTgt').style.left = 'calc(' + Math.min(100, X.w * 100) + '% - 1px)';
   const lo = Math.max(0, X.w - thr), hi = Math.min(1, X.w + thr); $('wBand').style.left = lo * 100 + '%'; $('wBand').style.width = (hi - lo) * 100 + '%';
   const box = $('orderBox'); box.className = 'order ' + P.side;
@@ -687,12 +685,18 @@ function renderAccount(X) {
   }
   const lim = P.side === 'buy' ? p * 1.15 : p * 0.85;
   $('orderAct').textContent = (P.side === 'buy' ? '매수 ' : '매도 ') + P.qty + '주';
-  $('orderDetail').innerHTML = '약 ' + money(P.amount) + ' · 조정 후 비중 약 ' + pc((a.shares + (P.side === 'buy' ? P.qty : -P.qty)) * p / P.V, 1) + '<br>LOC ' + (P.side === 'buy' ? '매수' : '매도') + ' 지정가 <b class="mono">' + lim.toFixed(2) + '</b> (계산 가격 ' + (P.side === 'buy' ? '+15%' : '−15%') + ', 사실상 종가 체결) 또는 MOC';
+  $('orderDetail').innerHTML = '약 ' + money(P.amount) + ' · 조정 후 비중 약 ' + pc((a.shares + (P.side === 'buy' ? P.qty : -P.qty)) * p / P.V, 1) + '<br>LOC ' + (P.side === 'buy' ? '매수' : '매도') + ' 지정가 <b class="mono">' + lim.toFixed(2) + '</b> (기준 가격 ' + (P.side === 'buy' ? '+15%' : '−15%') + ', 사실상 종가 체결) 또는 MOC';
 }
 function orderText() {
   if (!lastPlan || lastPlan.P.side === 'none') return 'TQQQ 오늘 조정 없음 (목표 ' + (lastPlan ? pc(lastPlan.X.w) : '—') + ')';
   const { P, p } = lastPlan, lim = P.side === 'buy' ? p * 1.15 : p * 0.85;
   return 'TQQQ LOC ' + (P.side === 'buy' ? '매수 ' : '매도 ') + P.qty + '주 @ ' + lim.toFixed(2) + ' (또는 MOC) · 목표 비중 ' + pc(lastPlan.X.w);
+}
+// 평균 매수가: 체결 기록으로 설명되지 않는 보유분이 있으면 입력칸, 없으면 기록으로 계산한 값 표시
+function renderAvg(X) {
+  const os = openShares(), hasLog = (state.log || []).length > 0;
+  $('avgF1').hidden = $('avgF2').hidden = !(os > 0);
+  $('avgNote').textContent = hasLog ? '체결 기록 이전부터 보유한 ' + os + '주의 평균 매수가. 양도세 계산에 씁니다' : '양도세 계산에 씁니다. 이후 체결은 기록으로 자동 반영됩니다';
 }
 function renderTax(X) {
   const a = curAccount(), t = taxCfg(), led = ledger(), fx = fxNowVal(), p = X.last ? X.last.c : 0, row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
@@ -703,8 +707,6 @@ function renderTax(X) {
     : mode === 'server' && fe ? '서버가 환율을 가져오지 못했습니다(' + fe + '). 여기에 직접 넣으세요.'
     : '환율 자료가 없어 직접 넣어야 합니다';
   $('tFxNow').placeholder = fl ? fl.c.toFixed(1) : '';
-  $('openBox').hidden = !(os > 0);
-  if (os > 0) $('openNote').textContent = '체결 기록 이전부터 보유한 ' + os + '주가 있습니다. 이 주식을 팔 때 손익을 계산하려면 평균 매수가와 그때 환율을 넣어 주세요.';
   let h = row(y + '년 TQQQ 실현손익', swon(ty.net) + (ty.n ? ' · 매도 ' + ty.n + '건' : ''));
   if (ty.other) h += row('다른 해외주식', swon(ty.other));
   h += row('공제 250만원 후', won(ty.base));
@@ -714,13 +716,15 @@ function renderTax(X) {
     if (led.holdCostK != null && Math.abs(led.holdShares - a.shares) < 1e-6) {
       h += row('보유분 원화 원가', won(led.holdCostK));
       if (fx > 0 && p > 0) h += row('원화 평가손익', swon(a.shares * p * fx - led.holdCostK));
-    } else h += row('보유분 원화 원가', '원가 정보 부족');
+    } else h += row('보유분 원화 원가', '평균 매수가 필요');
   }
   if (new Date().getMonth() < 5) { const tp = taxYear(led, y - 1, 0); if (tp.n) h += row((y - 1) + '년 귀속 (TQQQ만)', won(tp.tax) + ' · 5월 신고'); }
   $('taxKv').innerHTML = h;
   const w = [];
   if (ty.unknown) w.push('원가나 환율을 알 수 없는 매도 ' + ty.unknown + '건은 빠졌습니다.');
   if (ty.est) w.push('결제일 환율이 아직 없는 ' + ty.est + '건은 직전 환율로 추정했고, 환율이 들어오면 다시 계산합니다.');
+  const op = t.open || {};
+  if (os > 0 && !(op.avgCost > 0 && op.avgFx > 0)) w.push('보유 주식의 평균 매수가와 환율을 위 "내 계좌" 칸에 넣어야 이 주식을 팔 때 손익을 계산합니다.');
   if (os < 0) w.push('계좌 주수(' + a.shares + '주)가 체결 기록으로 계산한 주수보다 ' + (-os) + '주 적습니다. 계좌나 기록을 확인하세요.');
   $('taxWarn').textContent = w.join(' ');
 }
