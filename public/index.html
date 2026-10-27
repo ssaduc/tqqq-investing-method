@@ -35,46 +35,48 @@
   color-scheme:light;
 }
 *{box-sizing:border-box;}
-body{background:var(--bg); color:var(--text); font:15px/1.55 var(--font); margin:0;}
-.wrap{max-width:980px; margin:0 auto; padding-block:24px 56px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); display:grid; gap:18px;}
+html{font-size:clamp(15px, 13.4px + 0.4vw, 21px); -webkit-text-size-adjust:100%; text-size-adjust:100%;}
+body{background:var(--bg); color:var(--text); font:1rem/1.55 var(--font); margin:0;}
+.wrap{max-width:65.3rem; margin:0 auto; padding-block:24px 56px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); display:grid; gap:18px;}
 .mono,.num{font-family:var(--mono); font-variant-numeric:tabular-nums;}
-h1{font-size:26px; line-height:1.2; margin:0; letter-spacing:-0.01em; text-wrap:balance;}
-h2{font-size:15px; margin:0 0 12px; font-weight:600;}
-h3{font-size:12px; margin:0 0 8px; font-weight:600; color:var(--sub); letter-spacing:.04em;}
-.eyebrow{font:500 12px var(--mono); color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin:0 0 6px;}
+h1{font-size:1.7333rem; line-height:1.2; margin:0; letter-spacing:-0.01em; text-wrap:balance;}
+h2{font-size:1rem; margin:0 0 12px; font-weight:600;}
+h3{font-size:0.8rem; margin:0 0 8px; font-weight:600; color:var(--sub); letter-spacing:.04em;}
+.eyebrow{font:500 0.8rem var(--mono); color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin:0 0 6px;}
 .sub{color:var(--sub); margin:6px 0 0; max-width:62ch;}
 .card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; min-width:0;}
 .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
-.status{display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; font-size:13px; color:var(--sub);}
+.status{display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; font-size:0.8667rem; color:var(--sub);}
 .status b{color:var(--text); font-weight:600;}
-.pill{display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; border:1px solid var(--line2); font-size:12px; color:var(--sub); white-space:nowrap;}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; border:1px solid var(--line2); font-size:0.8rem; color:var(--sub); white-space:nowrap;}
 .pill.ok{color:var(--calm); border-color:color-mix(in srgb, var(--calm) 50%, var(--line2));}
 .pill.warn{color:var(--warn); border-color:color-mix(in srgb, var(--warn) 50%, var(--line2));}
 .pill.bad{color:var(--risk); border-color:color-mix(in srgb, var(--risk) 50%, var(--line2));}
-button{font:inherit; font-size:13.5px; padding:8px 14px; border-radius:8px; border:1px solid var(--line2); background:var(--card2); color:var(--text); cursor:pointer;}
+button{font:inherit; font-size:0.9rem; padding:8px 14px; border-radius:8px; border:1px solid var(--line2); background:var(--card2); color:var(--text); cursor:pointer;}
 button:hover{border-color:var(--sub);}
 button.primary{background:var(--w); border-color:var(--w); color:#04191C; font-weight:600;}
 button.ghost{background:transparent;}
 button:disabled{opacity:.5; cursor:default;}
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .tab:focus-visible{outline:2px solid var(--w); outline-offset:2px;}
-input,select,textarea{font:inherit; font-family:var(--mono); font-size:14px; color:var(--text); background:var(--panel); border:1px solid var(--line2); border-radius:8px; padding:8px 10px; width:100%; min-width:0;}
+input,select,textarea{font:inherit; font-family:var(--mono); font-size:0.9333rem; color:var(--text); background:var(--panel); border:1px solid var(--line2); border-radius:8px; padding:8px 10px; width:100%; min-width:0;}
 textarea{min-height:110px; resize:vertical;}
-label{display:block; font-size:12px; color:var(--sub); margin:0 0 5px;}
-.field small{display:block; color:var(--muted); font-size:11.5px; margin-top:4px;}
+input[readonly]{background:var(--card2); color:var(--sub);}
+label{display:block; font-size:0.8rem; color:var(--sub); margin:0 0 5px;}
+.field small{display:block; color:var(--muted); font-size:0.7667rem; margin-top:4px;}
 .form{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px;}
-.foot{font-size:12px; color:var(--muted); margin:10px 0 0;}
-.tag{display:inline-block; margin-left:5px; padding:0 5px; border-radius:4px; font-size:10.5px; font-weight:500; font-family:var(--font); color:var(--sub); background:var(--line); vertical-align:1px;}
-.msg{font-size:12.5px; color:var(--sub); margin:8px 0 0; min-height:1em;}
+.foot{font-size:0.8rem; color:var(--muted); margin:10px 0 0;}
+.tag{display:inline-block; margin-left:5px; padding:0 5px; border-radius:4px; font-size:0.7rem; font-weight:500; font-family:var(--font); color:var(--sub); background:var(--line); vertical-align:1px;}
+.msg{font-size:0.8333rem; color:var(--sub); margin:8px 0 0; min-height:1em;}
 
 /* 계기판 */
 .dial{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.35fr); gap:22px; align-items:center;}
 @media (max-width:700px){ .dial{grid-template-columns:1fr;} }
-.big{font:600 64px/1 var(--mono); letter-spacing:-0.03em; color:var(--w); font-variant-numeric:tabular-nums;}
-.big small{font-size:28px; margin-left:2px;}
-.bigl{font-size:12px; color:var(--sub); margin:0 0 6px; letter-spacing:.04em;}
-.kv{display:grid; grid-template-columns:auto 1fr; gap:4px 14px; margin-top:14px; font-size:13.5px;}
+.big{font:600 4.2667rem/1 var(--mono); letter-spacing:-0.03em; color:var(--w); font-variant-numeric:tabular-nums;}
+.big small{font-size:1.8667rem; margin-left:2px;}
+.bigl{font-size:0.8rem; color:var(--sub); margin:0 0 6px; letter-spacing:.04em;}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:4px 14px; margin-top:14px; font-size:0.9rem;}
 .kv dt{color:var(--sub);} .kv dd{margin:0; font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right;}
-.formula{font:500 12.5px var(--mono); color:var(--sub); margin-top:10px; overflow-wrap:anywhere;}
+.formula{font:500 0.8333rem var(--mono); color:var(--sub); margin-top:10px; overflow-wrap:anywhere;}
 .scale{position:relative; margin-top:8px;}
 .scale svg{width:100%; height:auto; display:block; overflow:visible;}
 .scale text{font:11px var(--mono); fill:var(--muted);}
@@ -88,21 +90,21 @@ label{display:block; font-size:12px; color:var(--sub); margin:0 0 5px;}
 .two{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px;}
 @media (max-width:760px){ .two{grid-template-columns:1fr;} }
 .order{border:1px solid var(--line2); border-radius:10px; padding:14px; background:var(--panel);}
-.order .act{font:600 22px var(--mono); margin:2px 0 4px;}
+.order .act{font:600 1.4667rem var(--mono); margin:2px 0 4px;}
 .order.buy .act{color:var(--w);} .order.sell .act{color:var(--warn);} .order.none .act{color:var(--sub);}
 .bar{position:relative; height:12px; border-radius:6px; background:var(--card2); border:1px solid var(--line); margin:10px 0 4px; overflow:hidden;}
 .bar i{position:absolute; top:0; bottom:0; left:0; background:var(--w); opacity:.85;}
 .bar b{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--text);}
 .bar .band{position:absolute; top:0; bottom:0; background:color-mix(in srgb, var(--text) 10%, transparent);}
-.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--sub);}
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:0.8rem; color:var(--sub);}
 .legend span::before{content:""; display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:-1px; background:currentColor;}
 .lw{color:var(--w);} .lt{color:var(--text);} .lb{color:var(--muted);}
-.sample{font-size:12px; color:var(--warn); margin:0 0 10px;}
+.sample{font-size:0.8rem; color:var(--warn); margin:0 0 10px;}
 
 /* 표 */
 .tblwrap{overflow-x:auto;}
-table{border-collapse:collapse; width:100%; font-size:13.5px;}
-th{font-weight:500; color:var(--muted); font-size:12px; text-align:left; padding:6px 10px; border-bottom:1px solid var(--line2); white-space:nowrap;}
+table{border-collapse:collapse; width:100%; font-size:0.9rem;}
+th{font-weight:500; color:var(--muted); font-size:0.8rem; text-align:left; padding:6px 10px; border-bottom:1px solid var(--line2); white-space:nowrap;}
 td{padding:7px 10px; border-bottom:1px solid var(--line); white-space:nowrap;}
 td.num,th.r{text-align:right;}
 .up{color:var(--calm);} .dn{color:var(--risk);}
@@ -119,16 +121,16 @@ td.num,th.r{text-align:right;}
 
 /* 탭 */
 .tabs{display:flex; gap:4px; border-bottom:1px solid var(--line); overflow-x:auto;}
-.tab{background:none; border:0; border-bottom:2px solid transparent; border-radius:0; color:var(--sub); padding:10px 14px; font-size:14px;}
+.tab{background:none; border:0; border-bottom:2px solid transparent; border-radius:0; color:var(--sub); padding:10px 14px; font-size:0.9333rem;}
 .tab[aria-selected="true"]{color:var(--text); border-bottom-color:var(--w);}
 .panel{padding-top:14px;}
 .rules p{margin:0 0 10px; color:var(--sub); max-width:68ch;} .rules p b{color:var(--text);}
 .rules h3{margin-top:16px;}
-.v1{display:inline-flex; gap:6px; align-items:center; font:500 12px var(--mono); color:var(--sub); border:1px solid var(--line2); border-radius:999px; padding:3px 10px;}
+.v1{display:inline-flex; gap:6px; align-items:center; font:500 0.8rem var(--mono); color:var(--sub); border:1px solid var(--line2); border-radius:999px; padding:3px 10px;}
 .v1.off{color:var(--warn); border-color:color-mix(in srgb, var(--warn) 50%, var(--line2));}
-.phase{font-size:12.5px; color:var(--warn); margin-top:8px;}
-.check{display:flex; gap:8px; align-items:center; font-size:13.5px; color:var(--text);} .check input{width:auto;}
-.sync{display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:12.5px; color:var(--sub);}
+.phase{font-size:0.8333rem; color:var(--warn); margin-top:8px;}
+.check{display:flex; gap:8px; align-items:center; font-size:0.9rem; color:var(--text);} .check input{width:auto;}
+.sync{display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:0.8333rem; color:var(--sub);}
 .sync input{width:160px;}
 @media (prefers-reduced-motion: no-preference){ .bar i{transition:width .3s ease;} }
 </style>
@@ -185,7 +187,8 @@ td.num,th.r{text-align:right;}
           <div class="field" id="avgF2" hidden><label for="tAvgFx">평균 매수 환율 (원/$)</label><input id="tAvgFx" type="number" min="0" step="0.01" inputmode="decimal"><small>모르면 매수 시기 환율의 대략값</small></div>
           <div class="field"><label for="aPrice">주문 계산 가격 ($) · 선택</label><input id="aPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="비워 두세요"><small id="aPriceNote">비우면 기준 종가를 씁니다</small></div>
         </div>
-        <dl class="kv" id="acctKv"></dl>
+        <h3 id="acctH" style="margin:16px 0 0" hidden>계좌 요약</h3>
+        <dl class="kv" id="acctKv" style="margin-top:6px"></dl>
         <div class="bar" id="wBar" aria-hidden="true"><span class="band" id="wBand"></span><i id="wCur"></i><b id="wTgt"></b></div>
         <div class="legend"><span class="lw">현재 비중</span><span class="lt">목표</span><span class="lb">±10%p 유지 구간</span></div>
       </div>
@@ -669,6 +672,7 @@ function renderAccount(X) {
   const a = curAccount(); $('sampleNote').hidden = a.set;
   const p = refPrice(X); $('aPriceNote').textContent = '평균 매수가가 아닙니다. 비우면 기준 종가' + (X.last ? ' ' + money(X.last.c) : '') + '로 오늘 주문 수량을 계산합니다. 장중에 미리 계산해 볼 때만 넣고, 저장되지 않습니다.';
   renderAvg(X);
+  $('acctH').hidden = !X.ok;
   if (!X.ok) { $('acctKv').innerHTML = ''; $('orderAct').textContent = '—'; $('orderDetail').textContent = '종가 데이터가 부족합니다.'; return; }
   const thr = X.c.threshold, P = planOrder({ shares: a.shares, cash: a.cash, price: p, w: X.w, thr }); lastPlan = { P, p, X };
   const row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
@@ -693,10 +697,20 @@ function orderText() {
   return 'TQQQ LOC ' + (P.side === 'buy' ? '매수 ' : '매도 ') + P.qty + '주 @ ' + lim.toFixed(2) + ' (또는 MOC) · 목표 비중 ' + pc(lastPlan.X.w);
 }
 // 평균 매수가: 체결 기록으로 설명되지 않는 보유분이 있으면 입력칸, 없으면 기록으로 계산한 값 표시
+// 보유 주식이 있으면 항상 표시. 전부 체결 기록으로 산 주식이면 기록으로 계산한 값을 읽기 전용으로 보여 줌
 function renderAvg(X) {
-  const os = openShares(), hasLog = (state.log || []).length > 0;
-  $('avgF1').hidden = $('avgF2').hidden = !(os > 0);
-  $('avgNote').textContent = hasLog ? '체결 기록 이전부터 보유한 ' + os + '주의 평균 매수가. 양도세 계산에 씁니다' : '양도세 계산에 씁니다. 이후 체결은 기록으로 자동 반영됩니다';
+  const a = curAccount(), os = openShares(), hasLog = (state.log || []).length > 0, f1 = $('tAvg'), f2 = $('tAvgFx');
+  $('avgF1').hidden = $('avgF2').hidden = !(a.shares > 0);
+  const auto = a.shares > 0 && !(os > 0);
+  if (auto) {
+    const led = ledger(), u = led.holdCostU, k = led.holdCostK, okSh = Math.abs(led.holdShares - a.shares) < 1e-6;
+    f1.value = okSh && u != null ? (u / a.shares).toFixed(2) : ''; f2.value = okSh && u && k != null ? (k / u).toFixed(1) : '';
+    $('avgNote').textContent = '체결 기록으로 자동 계산합니다 (' + (taxCfg().method === 'avg' ? '이동평균' : '선입선출') + ' 기준)';
+  } else {
+    if (f1.readOnly) { const op = taxCfg().open || {}; f1.value = op.avgCost || ''; f2.value = op.avgFx || ''; }
+    $('avgNote').textContent = hasLog ? '체결 기록 이전부터 보유한 ' + os + '주의 평균 매수가. 저장되며 양도세 계산에 씁니다' : '저장되며 양도세 계산에 씁니다. 이후 체결은 기록으로 자동 반영됩니다';
+  }
+  f1.readOnly = f2.readOnly = auto;
 }
 function renderTax(X) {
   const a = curAccount(), t = taxCfg(), led = ledger(), fx = fxNowVal(), p = X.last ? X.last.c : 0, row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
@@ -730,7 +744,11 @@ function renderTax(X) {
 }
 function renderTrack(X) {
   const tr = state.track, row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
-  if (!tr || !X.last) { $('trackKv').innerHTML = row('상태', '아직 시작하지 않았습니다'); $('trackBtn').textContent = '오늘부터 비교 시작'; return; }
+  if (!tr || !X.last) {
+    const a0 = curAccount(), V1 = X.last ? a0.shares * X.last.c + a0.cash : 0;
+    $('trackKv').innerHTML = (X.last ? row('내 계좌 (지금)', money(V1) + ' · ' + a0.shares + '주 + 현금 ' + money(a0.cash)) + row('기준 종가', X.last.d + ' · ' + money(X.last.c)) : '') + row('비교', '시작 버튼을 누르면 이 금액이 기준이 됩니다');
+    $('trackBtn').textContent = '오늘부터 비교 시작'; return;
+  }
   const a = curAccount(), p = X.last.c, V = a.shares * p + a.cash, hold = tr.V0 * p / tr.p0, n = (state.log || []).filter(x => x.d >= tr.d).length;
   const days = Math.max(0, Math.round((Date.parse(X.last.d) - Date.parse(tr.d)) / 864e5));
   $('trackKv').innerHTML = row('시작', tr.d + ' · ' + money(tr.V0) + (tr.v1 ? ' · 규칙 v1' : ' · 규칙 변경 상태')) + row('경과', days + '일 · 체결 ' + n + '건') +
