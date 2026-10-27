@@ -37,7 +37,8 @@
 *{box-sizing:border-box;}
 html{font-size:clamp(15px, 13.4px + 0.4vw, 21px); -webkit-text-size-adjust:100%; text-size-adjust:100%;}
 body{background:var(--bg); color:var(--text); font:1rem/1.55 var(--font); margin:0;}
-.wrap{max-width:65.3rem; margin:0 auto; padding-block:24px 56px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); display:grid; gap:18px;}
+.wrap{max-width:65.3rem; margin:0 auto; padding-block:24px 56px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); display:grid; gap:18px; grid-template-columns:minmax(0,1fr);}
+.wrap > *{min-width:0;}
 .mono,.num{font-family:var(--mono); font-variant-numeric:tabular-nums;}
 h1{font-size:1.7333rem; line-height:1.2; margin:0; letter-spacing:-0.01em; text-wrap:balance;}
 h2{font-size:1rem; margin:0 0 12px; font-weight:600;}
@@ -746,7 +747,7 @@ function renderTrack(X) {
   const tr = state.track, row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
   if (!tr || !X.last) {
     const a0 = curAccount(), V1 = X.last ? a0.shares * X.last.c + a0.cash : 0;
-    $('trackKv').innerHTML = (X.last ? row('내 계좌 (지금)', money(V1) + ' · ' + a0.shares + '주 + 현금 ' + money(a0.cash)) + row('기준 종가', X.last.d + ' · ' + money(X.last.c)) : '') + row('비교', '시작 버튼을 누르면 이 금액이 기준이 됩니다');
+    $('trackKv').innerHTML = (X.last ? row('내 계좌 (지금)', money(V1) + ' · ' + a0.shares + '주 + 현금 ' + money(a0.cash)) + row('기준 종가', X.last.d + ' · ' + money(X.last.c)) : '') + '<dt>비교</dt><dd style="font-family:var(--font);text-align:left">시작 버튼을 누르면 이 금액이 기준이 됩니다</dd>';
     $('trackBtn').textContent = '오늘부터 비교 시작'; return;
   }
   const a = curAccount(), p = X.last.c, V = a.shares * p + a.cash, hold = tr.V0 * p / tr.p0, n = (state.log || []).filter(x => x.d >= tr.d).length;
