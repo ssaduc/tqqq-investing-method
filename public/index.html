@@ -555,6 +555,8 @@ async function startArtifact() {
   }, () => {});
   setSync('이 페이지에 저장됩니다', 'ok');
 }
+// 서버 응답의 환율 상태: 옛 서버 파일이면 fx 항목 자체가 없음
+function fxFrom(pr) { return { fx: pr.fx || prices.fx || null, fxErr: !('fx' in pr) ? 'oldapi' : pr.fx ? '' : (pr.fxError || '환율 자료 없음') }; }
 async function startServer() {
   try {
     const st = await api('/api/state');
@@ -562,7 +564,7 @@ async function startServer() {
     if (st && st.state && st.state.v === 1 && (st.state.savedAt || 0) > (state.savedAt || 0)) state = st.state;
     let pr = await api('/api/prices');
     if (!pr || !pr.series || !pr.series.length || !pr.fx) pr = await api('/api/prices?refresh=1', { method: 'POST' });
-    prices = { series: pr.series || [], src: pr.src || '', updatedAt: pr.updatedAt || '', fx: pr.fx || prices.fx || null };
+    prices = Object.assign({ series: pr.series || [], src: pr.src || '', updatedAt: pr.updatedAt || '' }, fxFrom(pr));
     cacheLocal(); $('refreshBtn').hidden = false; setSync('서버와 동기화됨 ' + hhmm(), 'ok'); render(true);
   } catch (e) {
     if (e.auth) { mode = 'server'; setSync('접속 비밀번호를 입력하세요', 'auth'); }
@@ -695,7 +697,11 @@ function orderText() {
 function renderTax(X) {
   const a = curAccount(), t = taxCfg(), led = ledger(), fx = fxNowVal(), p = X.last ? X.last.c : 0, row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
   const y = new Date().getFullYear(), ty = taxYear(led, y, t.other), os = openShares(), fl = fxLatest();
-  $('tFxNote').textContent = fl ? '비우면 ' + md(fl.d) + ' 환율 ' + fl.c.toFixed(1) + '원을 씁니다' : '환율 자료가 없어 직접 넣어야 합니다';
+  const fe = prices.fxErr;
+  $('tFxNote').textContent = fl ? '비우면 ' + md(fl.d) + ' 환율 ' + fl.c.toFixed(1) + '원을 씁니다' + (fe && mode === 'server' ? ' (최신 환율 갱신 실패)' : '')
+    : mode === 'server' && fe === 'oldapi' ? '서버가 환율을 보내지 않습니다. Vercel의 api/prices.js와 lib/history.js도 새 파일로 바꿔 다시 배포하세요. 그 전에는 여기에 직접 넣으세요.'
+    : mode === 'server' && fe ? '서버가 환율을 가져오지 못했습니다(' + fe + '). 여기에 직접 넣으세요.'
+    : '환율 자료가 없어 직접 넣어야 합니다';
   $('tFxNow').placeholder = fl ? fl.c.toFixed(1) : '';
   $('openBox').hidden = !(os > 0);
   if (os > 0) $('openNote').textContent = '체결 기록 이전부터 보유한 ' + os + '주가 있습니다. 이 주식을 팔 때 손익을 계산하려면 평균 매수가와 그때 환율을 넣어 주세요.';
@@ -874,7 +880,7 @@ $('syncBtn').onclick = () => { accessKey = $('syncKey').value; try { localStorag
 $('syncKey').addEventListener('keydown', e => { if (e.key === 'Enter') $('syncBtn').click(); });
 $('refreshBtn').onclick = async () => {
   const b = $('refreshBtn'); b.disabled = true;
-  try { const pr = await api('/api/prices?refresh=1', { method: 'POST' }); prices = { series: pr.series || [], src: pr.src || '', updatedAt: pr.updatedAt || '', fx: pr.fx || prices.fx || null }; cacheLocal(); render(); setSync('종가를 새로 가져왔습니다 ' + hhmm(), 'ok'); }
+  try { const pr = await api('/api/prices?refresh=1', { method: 'POST' }); prices = Object.assign({ series: pr.series || [], src: pr.src || '', updatedAt: pr.updatedAt || '' }, fxFrom(pr)); cacheLocal(); render(); setSync('종가를 새로 가져왔습니다 ' + hhmm(), 'ok'); }
   catch (e) { setSync(e.auth ? '비밀번호가 필요합니다' : '종가를 가져오지 못했습니다. 데이터 탭에서 직접 넣을 수 있습니다.', e.auth ? 'auth' : 'bad'); }
   b.disabled = false;
 };
