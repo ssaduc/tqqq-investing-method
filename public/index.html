@@ -63,6 +63,7 @@ label{display:block; font-size:12px; color:var(--sub); margin:0 0 5px;}
 .field small{display:block; color:var(--muted); font-size:11.5px; margin-top:4px;}
 .form{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px;}
 .foot{font-size:12px; color:var(--muted); margin:10px 0 0;}
+.tag{display:inline-block; margin-left:5px; padding:0 5px; border-radius:4px; font-size:10.5px; font-weight:500; font-family:var(--font); color:var(--sub); background:var(--line); vertical-align:1px;}
 .msg{font-size:12.5px; color:var(--sub); margin:8px 0 0; min-height:1em;}
 
 /* 계기판 */
@@ -198,28 +199,36 @@ td.num,th.r{text-align:right;}
     </div>
   </section>
 
+  <!-- 내 계좌 vs TQQQ 그냥 보유 -->
+  <section class="card" aria-labelledby="kTitle">
+    <h2 id="kTitle">내 계좌 vs TQQQ 그냥 보유</h2>
+    <p class="foot" style="margin-top:0">시작한 날부터 내 계좌(체결 기록이 반영된 주수·현금)와, 같은 금액을 그날 TQQQ로 사서 들고만 있었을 경우를 비교합니다. 과거 데이터 검증과 달리 앞으로의 실제 결과입니다. 세금·이자는 빼지 않았고, 입금·출금이 있으면 다시 시작하세요.</p>
+    <dl class="kv" id="trackKv"></dl>
+    <div class="row" style="margin-top:12px"><button id="trackBtn" type="button">오늘부터 비교 시작</button><span class="msg" id="trackMsg" style="margin:0"></span></div>
+  </section>
+
   <!-- 세금 -->
   <section class="card" aria-labelledby="xTitle">
     <h2 id="xTitle">올해 양도세 예상 (원화)</h2>
-    <div class="two">
+    <p class="foot" style="margin-top:0">아래 체결 기록을 넣으면 결제일 환율로 원화 손익을 자동으로 다시 계산합니다.</p>
+    <div class="two" style="margin-top:12px">
       <div>
         <div class="form">
-          <div class="field"><label for="tAvg">보유분 평균 매수가 ($)</label><input id="tAvg" type="number" min="0" step="0.01" inputmode="decimal"><small>처음 한 번 넣으면 이후 체결 기록으로 갱신됩니다</small></div>
-          <div class="field"><label for="tAvgFx">보유분 평균 매수 환율 (원)</label><input id="tAvgFx" type="number" min="0" step="0.01" inputmode="decimal"></div>
-          <div class="field"><label for="tFxNow">현재 환율 (원/$)</label><input id="tFxNow" type="number" min="0" step="0.01" inputmode="decimal"><small>평가손익과 적립 권장액 환산에 씁니다</small></div>
+          <div class="field"><label for="tMethod">취득가 계산</label><select id="tMethod"><option value="fifo">선입선출 (세법 원칙)</option><option value="avg">이동평균 (일부 증권사)</option></select><small>쓰는 증권사의 양도세 계산 방식에 맞추세요</small></div>
+          <div class="field"><label for="tOther">다른 해외주식 손익 (원)</label><input id="tOther" type="number" step="1" inputmode="numeric" placeholder="0"><small>같은 해 다른 종목 실현손익. 공제 250만원을 함께 씁니다</small></div>
+          <div class="field"><label for="tFxNow">현재 환율 (원/$)</label><input id="tFxNow" type="number" min="0" step="0.01" inputmode="decimal"><small id="tFxNote">비우면 최근 환율을 씁니다</small></div>
+        </div>
+        <div id="openBox" hidden>
+          <p class="foot" id="openNote"></p>
+          <div class="form" style="margin-top:10px">
+            <div class="field"><label for="tAvg">그 주식의 평균 매수가 ($)</label><input id="tAvg" type="number" min="0" step="0.01" inputmode="decimal"></div>
+            <div class="field"><label for="tAvgFx">그 주식의 평균 매수 환율 (원)</label><input id="tAvgFx" type="number" min="0" step="0.01" inputmode="decimal"></div>
+          </div>
         </div>
       </div>
-      <div><dl class="kv" id="taxKv" style="margin-top:0"></dl></div>
+      <div><dl class="kv" id="taxKv" style="margin-top:0"></dl><p class="foot" id="taxWarn"></p></div>
     </div>
-    <p class="foot">해외주식 양도소득세는 연간 순이익에서 250만원을 공제한 뒤 22%(지방세 포함)이고, 다음 해 5월에 원화로 냅니다. 다른 해외주식 손익과 합산되므로 실제 세액은 달라집니다. 매도로 이익이 났다면 예상 세액만큼 RP에 따로 두면 5월에 바닥에서 강제로 팔 일이 줄어듭니다.</p>
-  </section>
-
-  <!-- 실전 추적 -->
-  <section class="card" aria-labelledby="kTitle">
-    <h2 id="kTitle">실전 추적 (규칙 v1 모의 운용)</h2>
-    <p class="foot" style="margin-top:0">지금까지의 검증은 모두 이미 본 과거 데이터였습니다. 규칙을 고정한 채 앞으로의 결과를 TQQQ 그냥 보유와 비교해 기록합니다.</p>
-    <dl class="kv" id="trackKv"></dl>
-    <div class="row" style="margin-top:12px"><button id="trackBtn" type="button">오늘부터 추적 시작</button><span class="msg" id="trackMsg" style="margin:0"></span></div>
+    <p class="foot">해외주식 양도소득세는 결제일 기준으로 연도를 나눠 연간 순이익에서 250만원을 공제한 뒤 22%(지방세 포함)이고, 다음 해 5월에 냅니다. 원화 환산도 결제일(미국 체결 다음 평일) 환율로 합니다. 여기서는 그날 시장 환율 종가를 써서 증권사 기준환율과 조금 다를 수 있고, 미국 휴일은 반영하지 않았습니다. 이익이 났다면 예상 세액만큼 RP에 따로 두면 5월에 바닥에서 강제로 팔 일이 줄어듭니다.</p>
   </section>
 
   <!-- 1년 추이 -->
@@ -252,7 +261,7 @@ td.num,th.r{text-align:right;}
           <div class="field"><label for="lQty">주수</label><input id="lQty" type="number" min="1" step="1" inputmode="numeric"></div>
           <div class="field"><label for="lPrice">체결가 ($)</label><input id="lPrice" type="number" min="0" step="0.01" inputmode="decimal"></div>
           <div class="field"><label for="lFee">수수료 ($)</label><input id="lFee" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
-          <div class="field"><label for="lFx">환율 (원/$)</label><input id="lFx" type="number" min="0" step="0.01" inputmode="decimal"><small>양도세 계산용. 체결일 환율</small></div>
+          <div class="field"><label for="lFx">환율 (원/$)</label><input id="lFx" type="number" min="0" step="0.01" inputmode="decimal" placeholder="자동"><small>비우면 결제일 환율을 자동으로 씁니다</small></div>
         </div>
         <div class="row" style="margin-top:12px"><button class="primary" id="addLog" type="button">기록하고 계좌에 반영</button><button id="fillFromOrder" type="button">오늘 주문으로 채우기</button></div>
         <p class="msg" id="logMsg" aria-live="polite"></p>
@@ -301,7 +310,7 @@ td.num,th.r{text-align:right;}
         <h3>약점</h3>
         <p>지난 변동성을 보고 움직여서 조용한 고점에서의 급락(1987년 블랙먼데이, 2020년 코로나)은 거의 막지 못합니다. V자 반등에서는 늦게 다시 채웁니다. 낙폭을 줄여도 50~70%는 남으므로, 이 전략에 넣는 금액 자체를 견딜 수 있는 수준으로 정하세요.</p>
         <h3>데이터 메모</h3>
-        <p>NDX는 1986년 이후 FRED와 일치함을 확인했고 그 이전 역산값은 쓰지 않았습니다. stooq QQQ의 2000~2001년 일간 잡음, stooq SPY·IVV의 2005~2010년 배당 누락을 확인해 합성에서 제외하거나 보정했습니다. 남은 진짜 검증은 위의 실전 추적입니다.</p>
+        <p>NDX는 1986년 이후 FRED와 일치함을 확인했고 그 이전 역산값은 쓰지 않았습니다. stooq QQQ의 2000~2001년 일간 잡음, stooq SPY·IVV의 2005~2010년 배당 누락을 확인해 합성에서 제외하거나 보정했습니다. 남은 진짜 검증은 위의 '내 계좌 vs TQQQ 그냥 보유' 비교입니다.</p>
       </div>
     </div>
 
@@ -405,27 +414,73 @@ function scenarios(s, c, moves) {
   const last = s[s.length - 1];
   return moves.map(m => { const d2 = s.concat([{ d: '9999-99-99', c: last.c * (1 + m) }]); const g = sigAt(d2, d2.length - 1, c); return { m, vol: g.vol, w: g.w }; });
 }
-// 체결 반영과 원화 원가·실현손익 (이동평균 원가, 체결일 환율, 수수료 포함)
+// 체결 반영 (주수·현금)
 function applyFill(acc, f) {
-  const q = f.qty, p = f.price, fee = f.fee || 0, fx = +f.fx || 0;
-  const a = { shares: acc.shares, cash: acc.cash, costK: acc.costK == null ? null : acc.costK };
-  let rk = null, dck = 0;
-  if (f.side === 'buy') {
-    a.shares += q; a.cash -= q * p + fee;
-    if (a.costK != null && fx > 0) { dck = (q * p + fee) * fx; a.costK += dck; } else { a.costK = null; dck = null; }
-  } else {
-    if (a.costK != null && acc.shares > 0) { const basis = a.costK * q / acc.shares; dck = -basis; a.costK -= basis; if (fx > 0) rk = (q * p - fee) * fx - basis; }
-    else dck = null;
-    a.shares -= q; a.cash += q * p - fee; if (a.shares === 0) a.costK = 0;
-  }
+  const q = f.qty, p = f.price, fee = f.fee || 0, a = { shares: acc.shares, cash: acc.cash };
+  if (f.side === 'buy') { a.shares += q; a.cash -= q * p + fee; } else { a.shares -= q; a.cash += q * p - fee; }
   a.cash = Math.round(a.cash * 100) / 100;
-  return { acc: a, rk, dck };
+  return { acc: a };
 }
-function taxYear(log, year) {
-  let net = 0, unknown = 0;
-  (log || []).forEach(x => { if (x.side === 'sell' && String(x.d).slice(0, 4) === String(year)) { if (x.rk == null) unknown++; else net += x.rk; } });
-  const base = Math.max(0, net - 2500000);
-  return { net, base, tax: base * 0.22, unknown };
+// 결제일: 미국 체결일 다음 평일 (T+1. 미국 휴일은 무시한 근사)
+function settleDate(d) {
+  const t = new Date(d + 'T12:00:00Z');
+  do { t.setUTCDate(t.getUTCDate() + 1); } while (t.getUTCDay() === 0 || t.getUTCDay() === 6);
+  return t.toISOString().slice(0, 10);
+}
+// 그 날 환율, 없으면 직전 환율 (fx는 날짜 오름차순)
+function fxOn(fx, d) {
+  if (!fx || !fx.length) return null;
+  let lo = 0, hi = fx.length - 1, k = -1;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (fx[m].d <= d) { k = m; lo = m + 1; } else hi = m - 1; }
+  return k < 0 ? null : { fx: fx[k].c, d: fx[k].d, exact: fx[k].d === d };
+}
+// 원화 양도손익 원장: 체결 기록 전체를 날짜순으로 다시 계산.
+// 취득가는 선입선출(fifo, 세법 원칙) 또는 이동평균(avg). 환율은 결제일 환율(직접 넣은 값 우선), 수수료 포함.
+// open: 기록 이전부터 보유한 주식 {shares, avgCost($), avgFx(원)}
+function taxLedger(log, o) {
+  o = o || {};
+  const fifo = o.method !== 'avg', fxs = o.fx || [], fb = +o.fxFallback || 0, op = o.open || {};
+  const lots = [];
+  if (op.shares > 0) lots.push({ q: op.shares, k: op.avgCost > 0 && op.avgFx > 0 ? op.shares * op.avgCost * op.avgFx : null });
+  const src = log || [], rows = new Array(src.length);
+  const order = src.map((x, i) => i).sort((a, b) => (src[a].d < src[b].d ? -1 : src[a].d > src[b].d ? 1 : a - b));
+  let short = 0;
+  order.forEach(i => {
+    const x = src[i], q = x.qty, p = x.price, fee = x.fee || 0, sd = settleDate(x.d);
+    let fx = null, how = '';
+    if (x.fx > 0) { fx = +x.fx; how = 'manual'; }
+    else { const f = fxOn(fxs, sd); if (f) { fx = f.fx; how = f.exact ? 'auto' : 'est'; } else if (fb > 0) { fx = fb; how = 'est'; } }
+    const r = { side: x.side, sd, year: sd.slice(0, 4), fx, how, rk: null, basis: null };
+    if (x.side === 'buy') {
+      const k = fx ? (q * p + fee) * fx : null;
+      if (!fifo && lots.length) { const l = lots[0]; l.k = l.k == null || k == null ? null : l.k + k; l.q += q; }
+      else lots.push({ q, k });
+    } else {
+      let need = q, basis = 0, known = true;
+      while (need > 0 && lots.length) {
+        const l = lots[0], m = Math.min(need, l.q);
+        if (l.k == null) known = false; else { const part = l.k * m / l.q; basis += part; l.k -= part; }
+        l.q -= m; need -= m; if (l.q <= 1e-9) lots.shift();
+      }
+      if (need > 0) { known = false; short += need; }
+      if (known && fx) { r.basis = basis; r.rk = (q * p - fee) * fx - basis; }
+    }
+    rows[i] = r;
+  });
+  const hq = lots.reduce((s, l) => s + l.q, 0);
+  return { rows, holdShares: hq, holdCostK: lots.some(l => l.k == null) ? null : lots.reduce((s, l) => s + l.k, 0), short };
+}
+// 귀속 연도(결제일 기준)의 예상 세액. other: 같은 해 다른 해외주식 손익(원)
+function taxYear(led, year, other) {
+  let net = 0, unknown = 0, n = 0, est = 0;
+  led.rows.forEach(r => {
+    if (!r || r.year !== String(year)) return;
+    if (r.how === 'est') est++;
+    if (r.side !== 'sell') return;
+    n++; if (r.rk == null) unknown++; else net += r.rk;
+  });
+  const oth = +other || 0, tot = net + oth, base = Math.max(0, tot - 2500000);
+  return { net, other: oth, tot, base, tax: base * 0.22, unknown, n, est };
 }
 // 창 안의 가장 큰 움직임과 그 날이 창에서 빠지기까지 남은 거래일
 function biggestInWindow(s, L) {
@@ -491,7 +546,8 @@ async function startArtifact() {
   try { db = await window.claude.use('db'); } catch (e) { db = null; }
   if (!db) { mode = 'local'; render(); return; }
   mode = 'artifact'; let first = true;
-  db.doc('prices/TQQQ').onSnapshot(s => { if (s.exists) { const d = s.data(); prices = { series: d.series || [], src: d.src || '', updatedAt: d.updatedAt || '' }; cacheLocal(); render(); } }, () => {});
+  db.doc('prices/TQQQ').onSnapshot(s => { if (s.exists) { const d = s.data(); prices = Object.assign({}, prices, { series: d.series || [], src: d.src || '', updatedAt: d.updatedAt || '' }); cacheLocal(); render(); } }, () => {});
+  db.doc('prices/USDKRW').onSnapshot(s => { if (s.exists) { const d = s.data(); prices = Object.assign({}, prices, { fx: { series: d.series || [], src: d.src || '', updatedAt: d.updatedAt || '' } }); cacheLocal(); render(); } }, () => {});
   db.doc('vt/state').onSnapshot(s => {
     if (s.exists) { const d = JSON.parse(JSON.stringify(s.data())); if (d.v === 1 && (d.savedAt || 0) > (state.savedAt || 0)) { state = d; cacheLocal(); render(true); } }
     else if (first && state.account.set) flush();
@@ -505,8 +561,8 @@ async function startServer() {
     mode = 'server';
     if (st && st.state && st.state.v === 1 && (st.state.savedAt || 0) > (state.savedAt || 0)) state = st.state;
     let pr = await api('/api/prices');
-    if (!pr || !pr.series || !pr.series.length) pr = await api('/api/prices?refresh=1', { method: 'POST' });
-    prices = { series: pr.series || [], src: pr.src || '', updatedAt: pr.updatedAt || '' };
+    if (!pr || !pr.series || !pr.series.length || !pr.fx) pr = await api('/api/prices?refresh=1', { method: 'POST' });
+    prices = { series: pr.series || [], src: pr.src || '', updatedAt: pr.updatedAt || '', fx: pr.fx || prices.fx || null };
     cacheLocal(); $('refreshBtn').hidden = false; setSync('서버와 동기화됨 ' + hhmm(), 'ok'); render(true);
   } catch (e) {
     if (e.auth) { mode = 'server'; setSync('접속 비밀번호를 입력하세요', 'auth'); }
@@ -595,7 +651,20 @@ function renderDial(X) {
   const b = biggestInWindow(X.s, c.lookback);
   $('rollInfo').textContent = b ? c.lookback + '일 창에서 가장 큰 움직임은 ' + md(b.d) + '의 ' + (b.r >= 0 ? '+' : '') + pc(b.r, 1) + '입니다. ' + b.left + '거래일 뒤 창에서 빠집니다.' : '';
 }
-function curAccount() { const a = state.account || {}, sh = +a.shares || 0; return { shares: sh, cash: +a.cash || 0, set: !!a.set, costK: sh === 0 ? 0 : (a.costK == null ? null : +a.costK) }; }
+function curAccount() { const a = state.account || {}; return { shares: +a.shares || 0, cash: +a.cash || 0, set: !!a.set }; }
+/* 양도세: 환율 자료, 설정, 원장 */
+function fxSeries() { const f = prices.fx && prices.fx.series; return Array.isArray(f) ? f.filter(r => r && /^\d{4}-\d\d-\d\d$/.test(r.d) && r.c > 0).sort((a, b) => (a.d < b.d ? -1 : 1)) : []; }
+function fxLatest() { const f = fxSeries(); return f.length ? f[f.length - 1] : null; }
+function fxNowVal() { if (+state.fxNow > 0) return +state.fxNow; const l = fxLatest(); return l ? l.c : 0; }
+function taxCfg() { const t = state.tax; if (t) return t; const ac = state.account || {}; return { method: 'fifo', other: 0, open: { avgCost: ac.avgCost || null, avgFx: ac.avgFx || null } }; }
+// 체결 기록으로 설명되지 않는 보유 주식 = 기록 이전부터 보유한 주식 (음수면 계좌와 기록이 맞지 않음)
+function openShares() { let n = curAccount().shares; (state.log || []).forEach(x => { n -= x.side === 'buy' ? x.qty : -x.qty; }); return n; }
+function ledger() {
+  const t = taxCfg(), op = t.open || {};
+  return taxLedger(state.log, { method: t.method || 'fifo', fx: fxSeries(), fxFallback: fxNowVal(), open: { shares: Math.max(0, openShares()), avgCost: +op.avgCost || 0, avgFx: +op.avgFx || 0 } });
+}
+const won = n => (n < 0 ? '−' : '') + Math.abs(Math.round(n)).toLocaleString('ko-KR') + '원';
+const swon = n => (n > 0 ? '+' : '') + won(n);
 function refPrice(X) { const v = +$('aPrice').value; return v > 0 ? v : (X.last ? X.last.c : 0); }
 let lastPlan = null;
 function renderAccount(X) {
@@ -624,28 +693,40 @@ function orderText() {
   return 'TQQQ LOC ' + (P.side === 'buy' ? '매수 ' : '매도 ') + P.qty + '주 @ ' + lim.toFixed(2) + ' (또는 MOC) · 목표 비중 ' + pc(lastPlan.X.w);
 }
 function renderTax(X) {
-  const a = curAccount(), fx = +state.fxNow || 0, p = X.last ? X.last.c : 0, row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
-  const y = (X.last ? X.last.d : expectedLast()).slice(0, 4), t = taxYear(state.log, y);
-  let h = '';
-  if (a.costK != null && a.shares > 0) {
-    h += row('보유분 원화 원가', Math.round(a.costK).toLocaleString('ko-KR') + '원');
-    if (fx > 0 && p > 0) { const val = a.shares * p * fx; h += row('원화 평가손익', (val - a.costK >= 0 ? '+' : '') + Math.round(val - a.costK).toLocaleString('ko-KR') + '원'); }
-  } else if (a.shares > 0) h += row('보유분 원가', '평균 매수가와 환율을 넣어 주세요');
-  h += row(y + '년 실현손익', (t.net >= 0 ? '+' : '') + Math.round(t.net).toLocaleString('ko-KR') + '원' + (t.unknown ? ' (환율·원가 없는 매도 ' + t.unknown + '건 제외)' : ''));
-  h += row('공제 250만원 후', Math.round(t.base).toLocaleString('ko-KR') + '원');
-  h += row('예상 세액 (22%)', '<b>' + Math.round(t.tax).toLocaleString('ko-KR') + '원</b>');
-  if (t.tax > 0) h += row('따로 둘 금액', fx > 0 ? money(t.tax / fx) + ' (현재 환율)' : '현재 환율을 넣으면 달러로 환산합니다');
+  const a = curAccount(), t = taxCfg(), led = ledger(), fx = fxNowVal(), p = X.last ? X.last.c : 0, row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
+  const y = new Date().getFullYear(), ty = taxYear(led, y, t.other), os = openShares(), fl = fxLatest();
+  $('tFxNote').textContent = fl ? '비우면 ' + md(fl.d) + ' 환율 ' + fl.c.toFixed(1) + '원을 씁니다' : '환율 자료가 없어 직접 넣어야 합니다';
+  $('tFxNow').placeholder = fl ? fl.c.toFixed(1) : '';
+  $('openBox').hidden = !(os > 0);
+  if (os > 0) $('openNote').textContent = '체결 기록 이전부터 보유한 ' + os + '주가 있습니다. 이 주식을 팔 때 손익을 계산하려면 평균 매수가와 그때 환율을 넣어 주세요.';
+  let h = row(y + '년 TQQQ 실현손익', swon(ty.net) + (ty.n ? ' · 매도 ' + ty.n + '건' : ''));
+  if (ty.other) h += row('다른 해외주식', swon(ty.other));
+  h += row('공제 250만원 후', won(ty.base));
+  h += row('예상 세액 (22%)', '<b>' + won(ty.tax) + '</b>');
+  if (ty.tax > 0) h += row('따로 둘 금액', fx > 0 ? money(ty.tax / fx) : '—');
+  if (a.shares > 0) {
+    if (led.holdCostK != null && Math.abs(led.holdShares - a.shares) < 1e-6) {
+      h += row('보유분 원화 원가', won(led.holdCostK));
+      if (fx > 0 && p > 0) h += row('원화 평가손익', swon(a.shares * p * fx - led.holdCostK));
+    } else h += row('보유분 원화 원가', '원가 정보 부족');
+  }
+  if (new Date().getMonth() < 5) { const tp = taxYear(led, y - 1, 0); if (tp.n) h += row((y - 1) + '년 귀속 (TQQQ만)', won(tp.tax) + ' · 5월 신고'); }
   $('taxKv').innerHTML = h;
+  const w = [];
+  if (ty.unknown) w.push('원가나 환율을 알 수 없는 매도 ' + ty.unknown + '건은 빠졌습니다.');
+  if (ty.est) w.push('결제일 환율이 아직 없는 ' + ty.est + '건은 직전 환율로 추정했고, 환율이 들어오면 다시 계산합니다.');
+  if (os < 0) w.push('계좌 주수(' + a.shares + '주)가 체결 기록으로 계산한 주수보다 ' + (-os) + '주 적습니다. 계좌나 기록을 확인하세요.');
+  $('taxWarn').textContent = w.join(' ');
 }
 function renderTrack(X) {
   const tr = state.track, row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
-  if (!tr || !X.last) { $('trackKv').innerHTML = row('상태', '아직 시작하지 않았습니다'); $('trackBtn').textContent = '오늘부터 추적 시작'; return; }
+  if (!tr || !X.last) { $('trackKv').innerHTML = row('상태', '아직 시작하지 않았습니다'); $('trackBtn').textContent = '오늘부터 비교 시작'; return; }
   const a = curAccount(), p = X.last.c, V = a.shares * p + a.cash, hold = tr.V0 * p / tr.p0, n = (state.log || []).filter(x => x.d >= tr.d).length;
   const days = Math.max(0, Math.round((Date.parse(X.last.d) - Date.parse(tr.d)) / 864e5));
   $('trackKv').innerHTML = row('시작', tr.d + ' · ' + money(tr.V0) + (tr.v1 ? ' · 규칙 v1' : ' · 규칙 변경 상태')) + row('경과', days + '일 · 체결 ' + n + '건') +
-    row('이 규칙', money(V) + ' (' + (V / tr.V0 - 1 >= 0 ? '+' : '') + pc(V / tr.V0 - 1, 1) + ')') + row('TQQQ 그냥 보유', money(hold) + ' (' + (hold / tr.V0 - 1 >= 0 ? '+' : '') + pc(hold / tr.V0 - 1, 1) + ')') +
+    row('내 계좌', money(V) + ' (' + (V / tr.V0 - 1 >= 0 ? '+' : '') + pc(V / tr.V0 - 1, 1) + ')') + row('TQQQ 그냥 보유', money(hold) + ' (' + (hold / tr.V0 - 1 >= 0 ? '+' : '') + pc(hold / tr.V0 - 1, 1) + ')') +
     row('차이', (V - hold >= 0 ? '+' : '') + money(V - hold).replace('$-', '−$'));
-  $('trackBtn').textContent = '추적 다시 시작';
+  $('trackBtn').textContent = '비교 다시 시작';
 }
 function renderBadge(X) {
   const c = X.c, b = $('v1Badge'), nm = { lin: '1/변동성', sq: '1/분산', dlin: '하락 변동성' }[c.rule] || c.rule;
@@ -690,8 +771,12 @@ function renderScen(X) {
 function renderLog() {
   const L = state.log || [];
   if (!L.length) { $('logBox').innerHTML = '<p class="foot" style="margin-top:0">아직 기록이 없습니다. 조정 주문이 체결되면 위에서 기록하세요. 계좌의 주수와 현금이 자동으로 바뀝니다.</p>'; return; }
+  const led = ledger();
   $('logBox').innerHTML = '<table><thead><tr><th>날짜</th><th>구분</th><th class="r">주수</th><th class="r">체결가</th><th class="r">금액</th><th class="r">수수료</th><th class="r">환율</th><th class="r">실현손익(원)</th><th></th></tr></thead><tbody>' +
-    L.slice().reverse().map((x, k) => '<tr><td class="mono">' + esc(x.d) + '</td><td class="' + (x.side === 'buy' ? 'up' : 'dn') + '">' + (x.side === 'buy' ? '매수' : '매도') + '</td><td class="num">' + x.qty + '</td><td class="num">' + x.price.toFixed(2) + '</td><td class="num">' + money(x.qty * x.price) + '</td><td class="num">' + (x.fee ? x.fee.toFixed(2) : '0') + '</td><td class="num">' + (x.fx ? (+x.fx).toFixed(1) : '—') + '</td><td class="num">' + (x.rk == null ? (x.side === 'sell' ? '—' : '') : (x.rk >= 0 ? '+' : '') + Math.round(x.rk).toLocaleString('ko-KR')) + '</td><td>' + (k === 0 ? '<button class="ghost" id="undoLog" type="button">되돌리기</button>' : '') + '</td></tr>').join('') + '</tbody></table>';
+    L.map((x, i) => [x, i, led.rows[i] || {}]).reverse().map(([x, i, r], k) => '<tr><td class="mono">' + esc(x.d) + '</td><td class="' + (x.side === 'buy' ? 'up' : 'dn') + '">' + (x.side === 'buy' ? '매수' : '매도') + '</td><td class="num">' + x.qty + '</td><td class="num">' + x.price.toFixed(2) + '</td><td class="num">' + money(x.qty * x.price) + '</td><td class="num">' + (x.fee ? x.fee.toFixed(2) : '0') + '</td>' +
+      '<td class="num">' + (r.fx ? r.fx.toFixed(1) + (r.how === 'est' ? '<span class="tag">추정</span>' : r.how === 'manual' ? '<span class="tag">직접</span>' : '') : '—') + '</td>' +
+      '<td class="num">' + (x.side !== 'sell' ? '' : r.rk == null ? '—' : swon(r.rk).replace('원', '') + (r.year !== x.d.slice(0, 4) ? '<span class="tag">' + r.year + '년</span>' : '')) + '</td><td>' + (k === 0 ? '<button class="ghost" id="undoLog" type="button">되돌리기</button>' : '') + '</td></tr>').join('') + '</tbody></table>' +
+    '<p class="foot">환율은 결제일(체결 다음 평일) 환율입니다. "추정"은 그날 환율이 아직 없어 직전 값을 쓴 것이고, "직접"은 입력한 값입니다. 실현손익은 위에서 고른 취득가 계산 방식으로 다시 계산합니다.</p>';
   const u = $('undoLog'); if (u) u.onclick = undoLog;
 }
 function renderPrices(X) {
@@ -706,8 +791,7 @@ function fillInputs() {
   $('aShares').value = a.shares; $('aCash').value = a.cash;
   $('sTarget').value = Math.round(c.target * 100); $('sLook').value = c.lookback; $('sThr').value = Math.round(c.threshold * 100); $('sRule').value = c.rule;
   const ph = (state.settings || {}).phase || {}; $('sPhase').checked = !!ph.on; $('sPhaseStart').value = ph.start || expectedLast(); $('sPhaseWeeks').value = String(ph.weeks || 8);
-  const ac = state.account || {}; $('tAvg').value = ac.avgCost || ''; $('tAvgFx').value = ac.avgFx || ''; $('tFxNow').value = state.fxNow || '';
-  if (!$('lFx').value && state.fxNow) $('lFx').value = state.fxNow;
+  const tc = taxCfg(), op = tc.open || {}; $('tMethod').value = tc.method || 'fifo'; $('tOther').value = tc.other || ''; $('tAvg').value = op.avgCost || ''; $('tAvgFx').value = op.avgFx || ''; $('tFxNow').value = state.fxNow || '';
   if (!$('lDate').value) $('lDate').value = expectedLast();
   if (!$('mDate').value) $('mDate').value = expectedLast();
 }
@@ -717,16 +801,14 @@ function onAccountInput() {
   const sh = Math.max(0, Math.floor(+$('aShares').value || 0)), cash = Math.max(0, +$('aCash').value || 0);
   const prev = state.account || {};
   state.account = Object.assign({}, prev, { shares: sh, cash: Math.round(cash * 100) / 100, set: true });
-  if (prev.avgCost > 0 && prev.avgFx > 0) state.account.costK = sh * prev.avgCost * prev.avgFx;
-  else if (sh === 0) state.account.costK = 0;
   scheduleSave(); render();
 }
 function onTaxInput() {
-  const avg = +$('tAvg').value || 0, afx = +$('tAvgFx').value || 0, fx = +$('tFxNow').value || 0, a = curAccount();
-  state.account = Object.assign({}, state.account || {}, { avgCost: avg || null, avgFx: afx || null, costK: avg > 0 && afx > 0 ? a.shares * avg * afx : (state.account || {}).costK == null ? null : state.account.costK });
-  state.fxNow = fx || null; scheduleSave(); render();
+  state.tax = { method: $('tMethod').value === 'avg' ? 'avg' : 'fifo', other: Math.round(+$('tOther').value || 0), open: { avgCost: +$('tAvg').value || null, avgFx: +$('tAvgFx').value || null } };
+  state.fxNow = +$('tFxNow').value || null; scheduleSave(); render();
 }
-['tAvg', 'tAvgFx', 'tFxNow'].forEach(id => $(id).addEventListener('input', onTaxInput));
+['tAvg', 'tAvgFx', 'tFxNow', 'tOther'].forEach(id => $(id).addEventListener('input', onTaxInput));
+$('tMethod').addEventListener('change', onTaxInput);
 ['aShares', 'aCash'].forEach(id => $(id).addEventListener('input', onAccountInput));
 $('aPrice').addEventListener('input', () => render());
 function addLog() {
@@ -734,26 +816,29 @@ function addLog() {
   if (!d || !(q > 0) || !(p > 0)) { $('logMsg').textContent = '날짜, 주수, 체결가를 모두 넣어 주세요.'; return; }
   const a = curAccount();
   if (side === 'sell' && q > a.shares) { $('logMsg').textContent = '보유 주수(' + a.shares + '주)보다 많이 팔 수 없습니다.'; return; }
-  const r = applyFill(a, { side, qty: q, price: p, fee, fx });
-  state.account = Object.assign({}, state.account || {}, r.acc, { set: true, avgCost: null, avgFx: null });
-  if (fx > 0) state.fxNow = state.fxNow || fx;
-  state.log = (state.log || []).concat([{ d, side, qty: q, price: p, fee, fx: fx || null, rk: r.rk, dck: r.dck }]).slice(-500);
+  if (!state.tax) state.tax = taxCfg();
+  const r = applyFill(a, { side, qty: q, price: p, fee });
+  state.account = Object.assign({}, state.account || {}, r.acc, { set: true });
+  state.log = (state.log || []).concat([{ d, side, qty: q, price: p, fee, fx: fx || null }]).slice(-500);
   scheduleSave(); fillInputs(); render();
-  $('logMsg').textContent = (side === 'buy' ? '매수 ' : '매도 ') + q + '주를 기록했고 계좌를 ' + state.account.shares + '주, ' + money(state.account.cash) + '로 바꿨습니다.' + (state.account.cash < 0 ? ' 현금이 음수입니다. 현금 칸을 확인하세요.' : '') + (!(fx > 0) ? ' 환율이 없어 양도세 계산에서는 빠집니다.' : '');
-  $('lQty').value = ''; $('lPrice').value = ''; $('lFee').value = '';
+  const lr = ledger().rows[state.log.length - 1] || {};
+  let tx = '';
+  if (side === 'sell') tx = lr.rk == null ? ' 원가를 알 수 없어 양도세 예상에서 빠졌습니다. 양도세 카드에서 기록 이전 보유분의 원가를 넣어 주세요.' : ' 원화 손익 ' + swon(lr.rk) + '(' + lr.year + '년 귀속, 환율 ' + lr.fx.toFixed(1) + (lr.how === 'est' ? ' 추정' : '') + ')을 양도세 예상에 반영했습니다.';
+  else if (lr.fx) tx = ' 원화 원가에 환율 ' + lr.fx.toFixed(1) + (lr.how === 'est' ? '(추정)' : '') + '로 반영했습니다.';
+  $('logMsg').textContent = (side === 'buy' ? '매수 ' : '매도 ') + q + '주를 기록했고 계좌를 ' + state.account.shares + '주, ' + money(state.account.cash) + '로 바꿨습니다.' + (state.account.cash < 0 ? ' 현금이 음수입니다. 현금 칸을 확인하세요.' : '') + tx;
+  $('lQty').value = ''; $('lPrice').value = ''; $('lFee').value = ''; $('lFx').value = '';
 }
 function undoLog() {
   const L = state.log || []; if (!L.length) return; const x = L[L.length - 1], a = curAccount();
   const shares = x.side === 'buy' ? a.shares - x.qty : a.shares + x.qty;
   const cash = Math.round((x.side === 'buy' ? a.cash + x.qty * x.price + (x.fee || 0) : a.cash - x.qty * x.price + (x.fee || 0)) * 100) / 100;
-  const costK = x.dck == null || a.costK == null ? null : a.costK - x.dck;
-  state.account = Object.assign({}, state.account || {}, { shares, cash, costK, set: true });
+  state.account = Object.assign({}, state.account || {}, { shares, cash, set: true });
   state.log = L.slice(0, -1); scheduleSave(); fillInputs(); render(); $('logMsg').textContent = '마지막 기록을 되돌렸습니다.';
 }
 $('addLog').onclick = addLog;
 $('fillFromOrder').onclick = () => {
   if (!lastPlan || lastPlan.P.side === 'none') { $('logMsg').textContent = '오늘은 조정할 주문이 없습니다.'; return; }
-  $('lSide').value = lastPlan.P.side; $('lQty').value = lastPlan.P.qty; $('lPrice').value = lastPlan.p.toFixed(2); $('lDate').value = expectedLast(); if (state.fxNow) $('lFx').value = state.fxNow;
+  $('lSide').value = lastPlan.P.side; $('lQty').value = lastPlan.P.qty; $('lPrice').value = lastPlan.p.toFixed(2); $('lDate').value = expectedLast(); $('lFx').value = '';
   $('logMsg').textContent = '체결가는 실제 체결 내역으로 고친 뒤 기록하세요.';
 };
 $('copyOrder').onclick = () => {
@@ -779,7 +864,7 @@ $('resetSet').onclick = () => { const ph = (state.settings || {}).phase; state.s
 $('trackBtn').onclick = () => {
   const X = compute(); if (!X.last) { $('trackMsg').textContent = '종가 데이터가 필요합니다.'; return; }
   const a = curAccount(), V = a.shares * X.last.c + a.cash; if (!(V > 0)) { $('trackMsg').textContent = '계좌를 먼저 입력하세요.'; return; }
-  state.track = { d: X.last.d, V0: V, p0: X.last.c, v1: isV1(X.c) }; scheduleSave(); render(); $('trackMsg').textContent = X.last.d + ' 종가 기준으로 추적을 시작했습니다. 입금·출금이 있으면 다시 시작하세요.';
+  state.track = { d: X.last.d, V0: V, p0: X.last.c, v1: isV1(X.c) }; scheduleSave(); render(); $('trackMsg').textContent = X.last.d + ' 종가 기준으로 비교를 시작했습니다. 입금·출금이 있으면 다시 시작하세요.';
 };
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', String(x === b)));
@@ -789,7 +874,7 @@ $('syncBtn').onclick = () => { accessKey = $('syncKey').value; try { localStorag
 $('syncKey').addEventListener('keydown', e => { if (e.key === 'Enter') $('syncBtn').click(); });
 $('refreshBtn').onclick = async () => {
   const b = $('refreshBtn'); b.disabled = true;
-  try { const pr = await api('/api/prices?refresh=1', { method: 'POST' }); prices = { series: pr.series || [], src: pr.src || '', updatedAt: pr.updatedAt || '' }; cacheLocal(); render(); setSync('종가를 새로 가져왔습니다 ' + hhmm(), 'ok'); }
+  try { const pr = await api('/api/prices?refresh=1', { method: 'POST' }); prices = { series: pr.series || [], src: pr.src || '', updatedAt: pr.updatedAt || '', fx: pr.fx || prices.fx || null }; cacheLocal(); render(); setSync('종가를 새로 가져왔습니다 ' + hhmm(), 'ok'); }
   catch (e) { setSync(e.auth ? '비밀번호가 필요합니다' : '종가를 가져오지 못했습니다. 데이터 탭에서 직접 넣을 수 있습니다.', e.auth ? 'auth' : 'bad'); }
   b.disabled = false;
 };
