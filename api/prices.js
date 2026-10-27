@@ -14,10 +14,11 @@ module.exports = async (req, res) => {
     const out = {};
     if (refresh) {
       const now = new Date().toISOString();
-      try { const h = await fetchHistory('TQQQ'); doc = { series: h.series, src: h.src, updatedAt: now }; await setJson(KEY, doc); }
-      catch (e) { out.error = String(e.message || e); }
-      try { const f = await fetchFx(); fx = { series: f.series, src: f.src, updatedAt: now }; await setJson(FXKEY, fx); }
-      catch (e) { out.fxError = String(e.message || e); }
+      const [h, f] = await Promise.allSettled([fetchHistory('TQQQ'), fetchFx()]);
+      if (h.status === 'fulfilled') { doc = { series: h.value.series, src: h.value.src, updatedAt: now }; await setJson(KEY, doc); }
+      else out.error = String((h.reason && h.reason.message) || h.reason);
+      if (f.status === 'fulfilled') { fx = { series: f.value.series, src: f.value.src, updatedAt: now }; await setJson(FXKEY, fx); }
+      else out.fxError = String((f.reason && f.reason.message) || f.reason);
     }
     return res.status(200).json(Object.assign({}, doc, { fx: fx || null }, out));
   } catch (e) {
