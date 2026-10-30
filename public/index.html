@@ -186,7 +186,7 @@ td.num,th.r{text-align:right;}
           <div class="field"><label for="aCash">현금 ($)</label><input id="aCash" type="number" min="0" step="0.01" inputmode="decimal"><small>RP·MMF 등 이 전략용 대기 자금</small></div>
           <div class="field" id="avgF1" hidden><label for="tAvg">평균 매수가 ($)</label><input id="tAvg" type="number" min="0" step="0.01" inputmode="decimal"><small id="avgNote">양도세 계산에 씁니다</small></div>
           <div class="field" id="avgF2" hidden><label for="tAvgFx">평균 매수 환율 (원/$)</label><input id="tAvgFx" type="number" min="0" step="0.01" inputmode="decimal"><small>모르면 매수 시기 환율의 대략값</small></div>
-          <div class="field"><label for="aPrice">주문 계산 가격 ($) · 선택</label><input id="aPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="비워 두세요"><small id="aPriceNote">비우면 기준 종가를 씁니다</small></div>
+          <div class="field"><label for="aPrice">예상 종가 ($) · 선택</label><input id="aPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="비우면 기준 종가"><small id="aPriceNote">비우면 기준 종가를 씁니다</small></div>
         </div>
         <h3 id="acctH" style="margin:16px 0 0" hidden>계좌 요약</h3>
         <dl class="kv" id="acctKv" style="margin-top:6px"></dl>
@@ -199,8 +199,13 @@ td.num,th.r{text-align:right;}
           <div class="act" id="orderAct">—</div>
           <div id="orderDetail" class="foot" style="margin-top:0"></div>
         </div>
+        <div class="order none" id="nextBox" style="margin-top:10px" hidden>
+          <h3 id="nextH">이 가격에 마감하면</h3>
+          <dl class="kv" id="nextKv" style="margin-top:4px"></dl>
+          <p class="foot" id="nextNote" style="margin-top:8px"></p>
+        </div>
         <div class="row" style="margin-top:10px"><button id="copyOrder" type="button">주문 내용 복사</button><span class="msg" id="copyMsg" style="margin:0"></span></div>
-        <p class="foot">본장 종가로 체결되도록 LOC나 MOC로 넣습니다. 수량은 기준 종가(또는 주문 계산 가격)로 계산해서 실제 종가에 따라 비중이 조금 달라질 수 있습니다.</p>
+        <p class="foot">본장 종가로 체결되도록 LOC나 MOC로 넣습니다. 수량은 기준 종가(또는 예상 종가)로 계산해서 실제 종가에 따라 비중이 조금 달라질 수 있습니다.</p>
       </div>
     </div>
   </section>
@@ -671,11 +676,11 @@ function refPrice(X) { const v = +$('aPrice').value; return v > 0 ? v : (X.last 
 let lastPlan = null;
 function renderAccount(X) {
   const a = curAccount(); $('sampleNote').hidden = a.set;
-  const p = refPrice(X); $('aPriceNote').textContent = '평균 매수가가 아닙니다. 비우면 기준 종가' + (X.last ? ' ' + money(X.last.c) : '') + '로 오늘 주문 수량을 계산합니다. 장중에 미리 계산해 볼 때만 넣고, 저장되지 않습니다.';
+  const p = refPrice(X); $('aPriceNote').textContent = '평균 매수가가 아닙니다. 오늘 장 마감 가격을 예상해 넣으면 그 가격으로 오늘 주문 수량을 다시 계산하고, 그 가격에 마감했을 때 내일 목표 비중과 주문을 오늘 주문 아래에 보여 줍니다. 비우면 기준 종가' + (X.last ? ' ' + money(X.last.c) : '') + '를 씁니다. 저장되지 않습니다.';
   renderAvg(X);
   $('acctH').hidden = !X.ok;
-  if (!X.ok) { $('acctKv').innerHTML = ''; $('orderAct').textContent = '—'; $('orderDetail').textContent = '종가 데이터가 부족합니다.'; return; }
-  const thr = X.c.threshold, P = planOrder({ shares: a.shares, cash: a.cash, price: p, w: X.w, thr }); lastPlan = { P, p, X };
+  if (!X.ok) { $('nextBox').hidden = true; $('acctKv').innerHTML = ''; $('orderAct').textContent = '—'; $('orderDetail').textContent = '종가 데이터가 부족합니다.'; return; }
+  const thr = X.c.threshold, P = planOrder({ shares: a.shares, cash: a.cash, price: p, w: X.w, thr }); lastPlan = { P, p, X }; renderNext(X, a, p, P);
   const row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
   const led = ledger(), avg = a.shares > 0 && led.holdCostU != null && Math.abs(led.holdShares - a.shares) < 1e-6 ? led.holdCostU / a.shares : null;
   $('acctKv').innerHTML = row('평가액', money(P.V)) + row('TQQQ', money(a.shares * p) + ' · ' + a.shares + '주') + (avg ? row('평균 매수가', money(avg) + ' (' + (p / avg - 1 >= 0 ? '+' : '') + pc(p / avg - 1, 1) + ')') : '') + row('현재 비중', pc(P.cur, 1)) + row('목표 비중', pc(X.w, 1)) + row('차이', (P.gap >= 0 ? '+' : '') + (P.gap * 100).toFixed(1) + '%p');
@@ -691,6 +696,24 @@ function renderAccount(X) {
   const lim = P.side === 'buy' ? p * 1.15 : p * 0.85;
   $('orderAct').textContent = (P.side === 'buy' ? '매수 ' : '매도 ') + P.qty + '주';
   $('orderDetail').innerHTML = '약 ' + money(P.amount) + ' · 조정 후 비중 약 ' + pc((a.shares + (P.side === 'buy' ? P.qty : -P.qty)) * p / P.V, 1) + '<br>LOC ' + (P.side === 'buy' ? '매수' : '매도') + ' 지정가 <b class="mono">' + lim.toFixed(2) + '</b> (기준 가격 ' + (P.side === 'buy' ? '+15%' : '−15%') + ', 사실상 종가 체결) 또는 MOC';
+}
+// 예상 종가 미리보기: 그 가격에 오늘 마감하면 → 내일 목표 비중과 내일 주문 (오늘 주문은 규칙대로 어제까지 종가로 정한 목표)
+function renderNext(X, a, p, P) {
+  const box = $('nextBox'), v = +$('aPrice').value;
+  if (!(v > 0) || !(a.shares * v + a.cash > 0)) { box.hidden = true; return; }
+  box.hidden = false;
+  const row = (k, x) => '<dt>' + k + '</dt><dd>' + x + '</dd>', c = X.c;
+  const s2 = X.s.concat([{ d: '9999-12-31', c: v }]), g = sigAt(s2, s2.length - 1, c), cap = phaseCap(s2, (state.settings || {}).phase).cap, wN = Math.min(g.w, cap);
+  const dq = P.side === 'buy' ? P.qty : P.side === 'sell' ? -P.qty : 0, sh2 = a.shares + dq, cash2 = a.cash - dq * v, V2 = sh2 * v + cash2, cur2 = V2 > 0 ? sh2 * v / V2 : 0;
+  const Q = planOrder({ shares: sh2, cash: cash2, price: v, w: wN, thr: c.threshold }), chg = v / X.last.c - 1, dW = wN - X.w;
+  $('nextH').textContent = money(v) + '에 마감하면 (' + (chg >= 0 ? '+' : '') + pc(chg, 1) + ')';
+  $('nextKv').innerHTML = row(c.lookback + '일 ' + (c.rule === 'dlin' ? '하락 ' : '') + '변동성', pc(X.vol) + ' → ' + pc(g.vol)) +
+    row('내일 목표 비중', '<b>' + pc(wN, 1) + '</b> (' + (dW >= 0 ? '+' : '') + (dW * 100).toFixed(1) + '%p)') +
+    row(dq ? '오늘 주문 후 비중' : '마감 후 비중', pc(cur2, 1)) +
+    row('내일 차이', (wN - cur2 >= 0 ? '+' : '') + ((wN - cur2) * 100).toFixed(1) + '%p') +
+    row('내일 예상 주문', Q.side === 'none' ? '조정 없음' : (Q.side === 'buy' ? '매수 ' : '매도 ') + Q.qty + '주 (약 ' + money(Q.amount) + ')');
+  $('nextNote').textContent = '규칙상 오늘 주문은 어제까지의 종가로 정한 목표(' + pc(X.w, 1) + ')를 따르고, 오늘 종가는 내일 목표에 반영됩니다. ' +
+    (Q.side === 'none' ? '이 가격이면 내일도 차이가 ' + Math.round(c.threshold * 100) + '%p보다 작아 조정이 없습니다.' : '이 가격에 마감하면 내일 위 주문이 나옵니다.');
 }
 function orderText() {
   if (!lastPlan || lastPlan.P.side === 'none') return 'TQQQ 오늘 조정 없음 (목표 ' + (lastPlan ? pc(lastPlan.X.w) : '—') + ')';
